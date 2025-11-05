@@ -9,7 +9,13 @@
 
 ## 安装依赖
 
-### 创建虚拟环境并安装
+### 直接安装（方便）
+
+```bash
+pip install -r requirements.txt
+```
+
+### 创建虚拟环境并安装（环境隔离）
 
 ```bash
 # macOS / Linux
