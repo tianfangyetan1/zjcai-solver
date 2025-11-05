@@ -41,7 +41,7 @@ pip install -r requirements.txt
 
 ## 配置 `config.json`
 
-在仓库根目录创建 `config.json`：
+编辑仓库根目录下的 `config.json`：
 
 ```json
 {
