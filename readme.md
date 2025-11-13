@@ -21,9 +21,14 @@ pip install -r requirements.txt
 
 1. 注册/登录 [DeepSeek 开放平台](https://platform.deepseek.com/)，创建 API Key 并充值。
 2. 复制生成的 API Key（形如 `sk-...`）。
-3. 将其写入仓库根目录的 `config.json`（见下节）。
+3. 将其写入仓库根目录的 `config.json`（见第 4 节）。
 
-### 3. 修改配置文件
+### 3. 配置 Chrome Driver（可选）
+
+前往 [Chrome for Testing availability](https://googlechromelabs.github.io/chrome-for-testing/#stable) 下载和你的 Chrome 大版本相同的版本。
+将下载后的文件保存在合适的位置，并将路径填入 `config.json`（见第 4 节）。
+
+### 4. 修改配置文件
 
 编辑仓库根目录下的 `config.json`：
 
@@ -31,6 +36,13 @@ pip install -r requirements.txt
 {
   "username": "该网站的用户名",
   "password": "该网站的密码",
-  "deepseek_api_key": "sk-xxxxxxxxxxxxxxxxxxxxxxxx"
+  "deepseek_api_key": "sk-xxxxxxxxxxxxxxxxxxxxxxxx",
+  "chromedriver_path": "ChromeDriver 的路径（可选）"
 }
 ```
+
+## 常见问题
+
+### 启动很慢怎么办？
+
+默认情况下，selenium 会在运行时自动下载合适的 ChromeDriver 版本。如果下载速度很慢，可以手动下载并配置路径。
