@@ -14,6 +14,7 @@ from typing import List, Tuple, Optional
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import (
     NoSuchElementException,
@@ -322,14 +323,17 @@ def load_config(cfg_path: Path = Path("config.json")) -> dict:
     return json.loads(cfg_path.read_text(encoding="utf-8"))
 
 
-def build_driver() -> webdriver.Chrome:
+def build_driver(chromedriver_path) -> webdriver.Chrome:
     """创建并返回 Chrome WebDriver。可在此处追加启动项配置。"""
     options = webdriver.ChromeOptions()
-    # 如需无头：取消下一行注释
-    # options.add_argument("--headless=new")
-    options.add_argument("--start-maximized")
     try:
-        return webdriver.Chrome(options=options)
+        if chromedriver_path != "":
+            service = Service(
+                executable_path=chromedriver_path
+            )
+            return webdriver.Chrome(service=service, options=options)
+        else:
+            return webdriver.Chrome(options=options)
     except WebDriverException as e:
         raise RuntimeError(f"启动 Chrome 失败：{e}")
 
@@ -344,16 +348,17 @@ def main() -> None:
     username = cfg.get("username", "")
     password = cfg.get("password", "")
     deepseek_api_key = cfg.get("deepseek_api_key", "")
+    chromedriver_path = cfg.get("chromedriver_path", "")
 
     if not (username and password and deepseek_api_key):
-        raise SystemExit("config.json 缺少必要字段：username/password/deepseek_api_key")
+        raise SystemExit("config.json 缺少必要字段")
 
     question_url = input("请输入答题链接：").strip()
     if not question_url:
         raise SystemExit("未输入答题链接，已退出。")
 
     llm = DeepSeekClient(api_key=deepseek_api_key)
-    driver = build_driver()
+    driver = build_driver(chromedriver_path)
 
     try:
         solver = QuizSolver(driver=driver, llm=llm, wait_seconds=DEFAULT_WAIT_SECONDS)

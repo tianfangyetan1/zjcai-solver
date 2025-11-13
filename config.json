@@ -1,5 +1,6 @@
 {
     "username": "",
     "password": "",
-    "deepseek_api_key": ""
+    "deepseek_api_key": "",
+    "chromedriver_path": ""
 }

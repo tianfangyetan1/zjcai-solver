@@ -8,11 +8,11 @@ import os
 import re
 import time
 from pathlib import Path
-from typing import Optional
 
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import TimeoutException, WebDriverException
 
@@ -45,18 +45,19 @@ SELECTORS = {
 # 工具函数
 # =============================
 
-def build_driver() -> webdriver.Chrome:
-    """构建并返回 Chrome WebDriver；支持通过 HEADLESS=1 环境变量启用无头模式。"""
+def build_driver(chromedriver_path) -> webdriver.Chrome:
+    """创建并返回 Chrome WebDriver。可在此处追加启动项配置。"""
     options = webdriver.ChromeOptions()
-    if os.getenv("HEADLESS") == "1":
-        options.add_argument("--headless=new")
-    options.add_argument("--start-maximized")
-    options.add_argument("--disable-gpu")
-    options.add_argument("--no-sandbox")
     try:
-        return webdriver.Chrome(options=options)
+        if chromedriver_path != "":
+            service = Service(
+                executable_path=chromedriver_path
+            )
+            return webdriver.Chrome(service=service, options=options)
+        else:
+            return webdriver.Chrome(options=options)
     except WebDriverException as e:
-        raise SystemExit(f"[fatal] 启动 Chrome 失败：{e}")
+        raise RuntimeError(f"启动 Chrome 失败：{e}")
 
 
 def load_config(path: Path = Path("config.json")) -> dict:
@@ -276,9 +277,10 @@ def main() -> None:
     logging.basicConfig(level=logging.INFO, format="%(asctime)s | %(levelname)s | %(message)s")
 
     cfg = load_config()
-    username = cfg["username"]
-    password = cfg["password"]
-    api_key = cfg["deepseek_api_key"]
+    username = cfg.get("username", "")
+    password = cfg.get("password", "")
+    deepseek_api_key = cfg.get("deepseek_api_key", "")
+    chromedriver_path = cfg.get("chromedriver_path", "")
 
     question_url = input("请输入答题链接：").strip()
     if not question_url:
@@ -286,8 +288,8 @@ def main() -> None:
 
     language = input("请输入代码题编程语言（例如 C语言、C++、Java、Python 等）：").strip() or "C语言"
 
-    client = init_llm_client(api_key)
-    driver = build_driver()
+    client = init_llm_client(deepseek_api_key)
+    driver = build_driver(chromedriver_path)
 
     try:
         # ---------- 登录 ----------
