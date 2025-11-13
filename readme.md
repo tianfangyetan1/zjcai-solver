@@ -44,6 +44,6 @@ pip install -r requirements.txt
 
 ## 常见问题
 
-### 启动很慢怎么办？
+#### 启动很慢怎么办？
 
-默认情况下，selenium 会在运行时自动下载合适的 Chrome Driver 版本。如果下载速度很慢，可以手动下载并配置路径。
+默认情况下，Selenium 会在运行时自动下载合适的 Chrome Driver 版本。如果下载速度很慢，可以[手动下载并配置路径](https://github.com/tianfangyetan1/zjcai-solver?tab=readme-ov-file#3-配置-chrome-driver可选)。
