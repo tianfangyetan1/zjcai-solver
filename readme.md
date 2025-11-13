@@ -25,7 +25,8 @@ pip install -r requirements.txt
 
 ### 3. 配置 Chrome Driver（可选）
 
-前往 [Chrome for Testing availability](https://googlechromelabs.github.io/chrome-for-testing/#stable) 下载和你的 Chrome 大版本相同的版本。
+前往 [Chrome for Testing availability](https://googlechromelabs.github.io/chrome-for-testing/#stable) 下载和你的 Chrome 大版本相同版本的 Chrome Driver。
+
 将下载后的文件保存在合适的位置，并将路径填入 `config.json`（见第 4 节）。
 
 ### 4. 修改配置文件
@@ -37,7 +38,7 @@ pip install -r requirements.txt
   "username": "该网站的用户名",
   "password": "该网站的密码",
   "deepseek_api_key": "sk-xxxxxxxxxxxxxxxxxxxxxxxx",
-  "chromedriver_path": "ChromeDriver 的路径（可选）"
+  "chromedriver_path": "Chrome Driver 的路径（可选）"
 }
 ```
 
@@ -45,4 +46,4 @@ pip install -r requirements.txt
 
 ### 启动很慢怎么办？
 
-默认情况下，selenium 会在运行时自动下载合适的 ChromeDriver 版本。如果下载速度很慢，可以手动下载并配置路径。
+默认情况下，selenium 会在运行时自动下载合适的 Chrome Driver 版本。如果下载速度很慢，可以手动下载并配置路径。
