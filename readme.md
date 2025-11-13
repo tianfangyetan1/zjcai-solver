@@ -25,7 +25,7 @@ pip install -r requirements.txt
 
 ### 3. 配置 Chrome Driver（可选）
 
-前往 [Chrome for Testing availability](https://googlechromelabs.github.io/chrome-for-testing/#stable) 下载和你的 Chrome 大版本相同版本的 Chrome Driver。
+前往 [Chrome for Testing availability](https://googlechromelabs.github.io/chrome-for-testing/#stable) 下载和你的 Chrome 大版本相同的 Chrome Driver。
 
 将下载后的文件保存在合适的位置，并将路径填入 `config.json`（见第 4 节）。
 
