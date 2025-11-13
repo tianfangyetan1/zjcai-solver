@@ -1,18 +1,4 @@
 # -*- coding: utf-8 -*-
-"""
-使用方式
-1) 在同目录下提供 config.json，结构如下：
-{
-  "username": "账号",
-  "password": "密码",
-  "deepseek_api_key": "你的DeepSeek API Key"
-}
-2) 运行脚本后，按照提示输入“答题链接”。
-
-注意
-- 本脚本假设页面结构与选择器与原始版本一致。若页面结构变动，请只需修改 SELECTORS 中的对应项。
-- 仅针对 单选/判断题 和 填空题 进行了处理；其他题型将跳过。
-"""
 
 from __future__ import annotations
 

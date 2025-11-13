@@ -1,21 +1,5 @@
 # -*- coding: utf-8 -*-
-"""
-依赖
-- selenium, openai
-- Chrome / Chromium + 对应 chromedriver
 
-配置
-- 在同目录准备 config.json：
-{
-  "username": "账号",
-  "password": "密码",
-  "deepseek_api_key": "你的DeepSeek API Key"
-}
-
-运行
-- 直接运行后，按提示输入答题链接与编程语言（用于提示词）
-- 支持环境变量 HEADLESS=1 开启无头
-"""
 from __future__ import annotations
 
 import json
