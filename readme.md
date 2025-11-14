@@ -57,14 +57,14 @@ pip install -r requirements.txt
 
 ## 常见问题
 
-#### 启动很慢怎么办？
+### 启动很慢怎么办？
 
 默认情况下，Selenium 会在运行时自动下载合适的 Chrome Driver 版本。如果下载速度很慢，可以[手动下载并配置路径](https://github.com/tianfangyetan1/zjcai-solver?tab=readme-ov-file#3-配置-chrome-driver可选)。
 
-#### 初始化 LaTeX-OCR 模型时卡住怎么办？
+### 初始化 LaTeX-OCR 模型时卡住怎么办？
 
 首次使用需要下载模型数据，成为*魔法少女*可以加快这一步骤。
 
-#### LLM 生成的回答质量较差怎么办？
+### LLM 生成的回答质量较差怎么办？
 
 默认使用的模型是 `deepseek-chat`（未开启深度思考），设置为 `deepseek-reasoner` 可以开启深度思考，但是回答速度会变慢，而且消耗的 token 更多。
