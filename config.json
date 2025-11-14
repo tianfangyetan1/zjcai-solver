@@ -2,5 +2,6 @@
     "username": "",
     "password": "",
     "deepseek_api_key": "",
-    "chromedriver_path": ""
+    "chromedriver_path": "",
+    "enable_latex_ocr": false
 }
