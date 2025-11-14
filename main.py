@@ -261,18 +261,27 @@ class QuizSolver:
         formulas: List[str] = []
 
         if self.enable_latex_ocr and self.latex_ocr_model and imgs:
-            for idx, img_el in enumerate(imgs, start=1):
-                try:
-                    png_bytes = img_el.screenshot_as_png
-                    if not png_bytes:
+            # pix2tex 内部有一行 logging.info(r, img.size, ...) 会触发日志格式化报错，
+            # 这里临时把 root logger 的级别调高到 WARNING，让那行 info 根本不会执行。
+            root_logger = logging.getLogger()
+            old_level = root_logger.level
+            try:
+                root_logger.setLevel(logging.WARNING)
+                for idx, img_el in enumerate(imgs, start=1):
+                    try:
+                        png_bytes = img_el.screenshot_as_png
+                        if not png_bytes:
+                            formulas.append("")
+                            continue
+                        img = Image.open(BytesIO(png_bytes)).convert("RGB")
+                        latex = str(self.latex_ocr_model(img) or "").strip()
+                        formulas.append(latex)
+                    except Exception as e:
+                        logging.warning("LaTeX-OCR 识别第 %d 张图片失败：%s", idx, e)
                         formulas.append("")
-                        continue
-                    img = Image.open(BytesIO(png_bytes)).convert("RGB")
-                    latex = str(self.latex_ocr_model(img) or "").strip()
-                    formulas.append(latex)
-                except Exception as e:
-                    logging.warning("LaTeX-OCR 识别第 %d 张图片失败：%s", idx, e)
-                    formulas.append("")
+            finally:
+                # 不管成功失败，都把日志级别恢复成原来的
+                root_logger.setLevel(old_level)
         else:
             # 未启用 OCR 时，也保留图片占位
             formulas = ["" for _ in imgs]
