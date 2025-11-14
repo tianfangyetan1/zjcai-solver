@@ -2,6 +2,7 @@
     "username": "",
     "password": "",
     "deepseek_api_key": "",
+    "llm_model": "deepseek-chat",
     "chromedriver_path": "",
     "enable_latex_ocr": false
 }
