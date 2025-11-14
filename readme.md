@@ -1,9 +1,6 @@
 # Zjcai Solvers
 
-本仓库包含两份互不依赖的脚本，用于在浏览器中自动完成 [zjcai.com](https://zjcai.com) 的在线题目，并调用 DeepSeek API 自动填充答案：
-
-1. `quiz_solver_mc_fill.py` - 处理单选/判断/填空题
-2. `quiz_solver_code.py` - 处理代码类题目，向网站的编辑器写入答案
+本仓库包的脚本用于在浏览器中自动完成 [zjcai.com](https://zjcai.com) 的在线题目，并调用 DeepSeek API 自动填充答案。
 
 ## TODO
 
