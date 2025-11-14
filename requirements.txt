@@ -2,3 +2,4 @@ selenium==4.38.0
 openai==2.8.0
 pix2tex==0.1.4
 pillow==12.0.0
+win10toast==0.9
