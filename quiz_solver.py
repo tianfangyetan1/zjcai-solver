@@ -515,7 +515,6 @@ class QuizSolver:
                     system_prompt = (
                         f"请使用{self.language}完成以下需求，"
                         f"不要使用注释，不要使用代码块。"
-                        f"如果要求定义函数，则只定义函数，不调用函数。"
                     )
                     llm_answer = self.llm.ask(system_prompt, prompt_text)
                     logging.info("LLM 返回(代码题) %d 字符", len(llm_answer))
