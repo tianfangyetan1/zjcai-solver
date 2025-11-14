@@ -740,6 +740,7 @@ def main() -> None:
     username = cfg.get("username", "")
     password = cfg.get("password", "")
     deepseek_api_key = cfg.get("deepseek_api_key", "")
+    llm_model = cfg.get("llm_model", "deepseek-chat")
     chromedriver_path = cfg.get("chromedriver_path", "")
     enable_latex_ocr = cfg.get("enable_latex_ocr", False)
 
@@ -752,7 +753,7 @@ def main() -> None:
 
     language = input("请输入代码题编程语言（例如 C语言、C++、Java、Python 等）：").strip() or "C语言"
 
-    llm = DeepSeekClient(api_key=deepseek_api_key)
+    llm = DeepSeekClient(api_key=deepseek_api_key, model=llm_model)
     driver = build_driver(chromedriver_path)
 
     try:
