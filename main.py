@@ -26,19 +26,36 @@ from selenium.common.exceptions import (
 
 from openai import OpenAI
 
+# Windows 10+ 原生 Toast 通知
 try:
-    # Windows 10+ 原生 Toast 通知
     from win10toast import ToastNotifier  # type: ignore
     _WIN10_TOAST_AVAILABLE = True
 except Exception:
     ToastNotifier = None  # type: ignore
     _WIN10_TOAST_AVAILABLE = False
 
+# 根据 config.json 决定是否导入 LaTeX-OCR
+_ENABLE_LATEX_OCR_FROM_CFG = False
 try:
-    # LaTeX-OCR (pix2tex)
-    from pix2tex.cli import LatexOCR  # type: ignore
-    _LATEX_OCR_AVAILABLE = True
+    cfg_path_for_import = Path("config.json")
+    if cfg_path_for_import.exists():
+        cfg_for_import = json.loads(cfg_path_for_import.read_text(encoding="utf-8"))
+        # 和 main() 里保持一致：默认 False，未写则视为启用
+        _ENABLE_LATEX_OCR_FROM_CFG = bool(cfg_for_import.get("enable_latex_ocr", False))
 except Exception:
+    # 读配置失败时，保持默认 False（和原行为尽量一致）
+    _ENABLE_LATEX_OCR_FROM_CFG = False
+
+if _ENABLE_LATEX_OCR_FROM_CFG:
+    try:
+        # 仅在配置开启时导入
+        from pix2tex.cli import LatexOCR  # type: ignore
+        _LATEX_OCR_AVAILABLE = True
+    except Exception:
+        LatexOCR = None  # type: ignore
+        _LATEX_OCR_AVAILABLE = False
+else:
+    # 未启用时不导入库，标记为不可用
     LatexOCR = None  # type: ignore
     _LATEX_OCR_AVAILABLE = False
 
