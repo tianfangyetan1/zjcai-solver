@@ -9,6 +9,8 @@ import logging
 from dataclasses import dataclass
 from pathlib import Path
 from typing import List, Tuple, Optional
+from io import BytesIO
+from PIL import Image
 
 from selenium import webdriver
 from selenium.webdriver.common.by import By
@@ -22,6 +24,14 @@ from selenium.common.exceptions import (
 )
 
 from openai import OpenAI
+
+try:
+    # LaTeX-OCR (pix2tex)
+    from pix2tex.cli import LatexOCR  # type: ignore
+    _LATEX_OCR_AVAILABLE = True
+except Exception:
+    LatexOCR = None  # type: ignore
+    _LATEX_OCR_AVAILABLE = False
 
 # =============================
 # 配置与常量
@@ -155,11 +165,36 @@ class QuizSolver:
         llm: DeepSeekClient,
         language: str = "C语言",
         wait_seconds: int = DEFAULT_WAIT_SECONDS,
+        enable_latex_ocr: bool = False,  # 新增开关
     ):
         self.driver = driver
         self.wait = WebDriverWait(driver, wait_seconds)
         self.llm = llm
         self.language = language or "C语言"
+
+        # ---- LaTeX-OCR（题目/选项图片 → LaTeX 公式）----
+        self.latex_ocr_model = None
+        self.enable_latex_ocr = bool(enable_latex_ocr and _LATEX_OCR_AVAILABLE)
+
+        if self.enable_latex_ocr:
+            try:
+                logging.info("正在初始化 LaTeX-OCR 模型（pix2tex）.")
+                self.latex_ocr_model = LatexOCR()  # type: ignore
+
+                # 关键：有些三方库在初始化时会修改全局 logging 的配置（比如把级别调成 WARNING）
+                # 这里强制把根 logger 的级别重新设回 INFO，并保证至少有一个输出到控制台的 handler。
+                root = logging.getLogger()
+                root.setLevel(logging.INFO)
+                if not root.handlers:
+                    h = logging.StreamHandler()
+                    fmt = logging.Formatter("%(asctime)s | %(levelname)s | %(message)s")
+                    h.setFormatter(fmt)
+                    root.addHandler(h)
+
+                logging.info("LaTeX-OCR 模型初始化完成。")
+            except Exception as e:
+                logging.warning("初始化 LaTeX-OCR 失败，将禁用公式 OCR 功能：%s", e)
+                self.enable_latex_ocr = False
 
     # ---------- 登录 ----------
     def login(self, url: str, username: str, password: str) -> None:
@@ -185,7 +220,7 @@ class QuizSolver:
         )
 
     def collect_current_question(self) -> QuestionSnapshot:
-        """收集当前题目的关键信息（题干、类型、选项）。"""
+        """收集当前题目的关键信息（题干、类型、选项），并在图片位置内联 LaTeX 公式。"""
         q_el = self.wait_for_question_item()
         qid = q_el.get_attribute("id") or ""
         qtype = (q_el.get_attribute("data-type") or "").upper().strip()
@@ -193,50 +228,112 @@ class QuizSolver:
         face_el = self.wait.until(
             EC.visibility_of_element_located((By.CSS_SELECTOR, SELECTORS["question_face"]))
         )
-        q_text = clean_whitespace(face_el.text)
+        # 使用内联 LaTeX 的题干文本
+        q_text = self.render_element_text_with_inline_latex(face_el)
 
         options: List[Option] = []
+        # 注意：选项里也可能有图片，所以同样用 render_element_text_with_inline_latex
         for lab in self.driver.find_elements(By.CSS_SELECTOR, SELECTORS["answer_labels"]):
-            key, text = parse_option_label(lab.text)
+            label_text = self.render_element_text_with_inline_latex(lab)
+            key, text = parse_option_label(label_text)
             options.append(Option(key=key, text=text))
 
         return QuestionSnapshot(qid=qid, qtype=qtype, text=q_text, options=options)
+    
+    # ---------- DOM 元素 → 文本（图片位置内联 LaTeX） ----------
+    def render_element_text_with_inline_latex(self, element) -> str:
+        """
+        把一个包含 <img> 的 DOM 元素转换为纯文本：
+        - 普通文字保持不变
+        - 每个 <img> 按出现顺序替换为 [公式: <latex>] 或 [图片]
+        """
+        if element is None:
+            return ""
+
+        # 用 innerHTML 保留图片在文本中的相对位置
+        html = element.get_attribute("innerHTML") or ""
+        if not html:
+            # 没有 HTML 时退化为纯文本
+            return clean_whitespace(element.text)
+
+        # 收集当前元素下所有图片（按 DOM 顺序）
+        imgs = element.find_elements(By.CSS_SELECTOR, "img")
+        formulas: List[str] = []
+
+        if self.enable_latex_ocr and self.latex_ocr_model and imgs:
+            for idx, img_el in enumerate(imgs, start=1):
+                try:
+                    png_bytes = img_el.screenshot_as_png
+                    if not png_bytes:
+                        formulas.append("")
+                        continue
+                    img = Image.open(BytesIO(png_bytes)).convert("RGB")
+                    latex = str(self.latex_ocr_model(img) or "").strip()
+                    formulas.append(latex)
+                except Exception as e:
+                    logging.warning("LaTeX-OCR 识别第 %d 张图片失败：%s", idx, e)
+                    formulas.append("")
+        else:
+            # 未启用 OCR 时，也保留图片占位
+            formulas = ["" for _ in imgs]
+
+        # 按顺序把 <img> 替换为 [公式: xxx]
+        index = 0
+
+        def _img_replacer(m: re.Match) -> str:
+            nonlocal index
+            latex = formulas[index] if index < len(formulas) else ""
+            index += 1
+            if latex:
+                # 这里的样式你可以按需改，比如直接返回 latex 或 "\\(" + latex + "\\)"
+                return f" [公式: {latex}] "
+            return " [图片] "
+
+        # 先把 <br> 转成换行，增强可读性
+        html = re.sub(r"(?i)<br\s*/?>", "\n", html)
+        # 再替换掉所有 <img ...>
+        html = re.sub(r"(?i)<img\b[^>]*>", _img_replacer, html)
+        # 去掉剩余 HTML 标签
+        html = re.sub(r"<[^>]+>", "", html)
+        # 压缩空白
+        return clean_whitespace(html)
 
     def get_question_text_for_code(self) -> str:
         """
         用于代码题的完整提示文本：
-        - 题目描述（question-face）
+        - 题目描述（question-face，含图片位置内联的 LaTeX 公式）
         - 文本编辑器前置代码（题目给的代码骨架 / 示例，通常在 <pre> 里）
         - 当前编辑器中的代码（如果已经有内容，方便增量修改）
         """
         # 1) 题干（可能有多个 .question-face）
         faces = self.driver.find_elements(By.CSS_SELECTOR, SELECTORS["question_faces"])
-        face_text_raw = "\n".join(
-            (el.get_attribute("textContent") or "").strip() for el in faces
-        )
-
-        # 压缩空白
-        face_text = re.sub(r"\r?\n\s*\r?\n+", "\n", face_text_raw)
-        face_text = re.sub(r"[\t\x0b\x0c]+", " ", face_text)
-        face_text = re.sub(r"\s+", " ", face_text).strip()
+        face_texts: List[str] = []
+        for el in faces:
+            txt = self.render_element_text_with_inline_latex(el)
+            if txt:
+                face_texts.append(txt)
+        face_text = "\n".join(face_texts).strip()
 
         # 2) 题目给的起始代码（pre 里的内容）
-        template_codes: list[str] = []
-        for pre in self.driver.find_elements(By.CSS_SELECTOR, SELECTORS["code_template_pre"]):
+        template_codes: List[str] = []
+        for pre in self.driver.find_elements(
+            By.CSS_SELECTOR,
+            SELECTORS.get("code_template_pre", ".question-answer pre, pre[data-lang]")
+        ):
             txt = (pre.get_attribute("textContent") or "").replace("\r\n", "\n")
             txt = txt.strip("\n")
             if txt:
                 template_codes.append(txt)
 
         # 3) 当前编辑器里的代码（有些题你可能已经写了一部分）
-        current_editor_code = ""
-        try:
-            ta = self.driver.find_element(By.CSS_SELECTOR, "textarea.question-design-input")
-            current_editor_code = (ta.get_attribute("value") or "").strip()
-        except NoSuchElementException:
-            pass
+        # current_editor_code = ""
+        # try:
+        #     ta = self.driver.find_element(By.CSS_SELECTOR, "textarea.question-design-input")
+        #     current_editor_code = (ta.get_attribute("value") or "").strip()
+        # except NoSuchElementException:
+        #     pass
 
-        parts: list[str] = []
+        parts: List[str] = []
 
         if face_text:
             parts.append("【题目描述】")
@@ -246,15 +343,20 @@ class QuizSolver:
             parts.append("【系统给出的起始代码（不要随意删除，通常是 main 函数等框架）】")
             parts.append("\n\n".join(template_codes))
 
-        if current_editor_code:
-            parts.append("【当前编辑器中的代码（在此基础上继续完善）】")
-            parts.append(current_editor_code)
+        # if current_editor_code:
+        #     parts.append("【当前编辑器中的代码（在此基础上继续完善）】")
+        #     parts.append(current_editor_code)
 
-        # 如果什么都没有，就返回原始 face_text_raw 做兜底
+        # 如果啥都没有，就退回最原始文本当兜底
         if not parts:
-            return face_text_raw.strip()
+            try:
+                raw = "\n".join(
+                    (el.get_attribute("textContent") or "").strip() for el in faces
+                )
+                return raw.strip()
+            except Exception:
+                return ""
 
-        # 用空行拼接，保留代码的换行
         return "\n\n".join(parts)
 
     # ---------- 作答：单选/判断 ----------
@@ -497,12 +599,13 @@ class QuizSolver:
 
     # ---------- LLM 决策逻辑 ----------
     def build_llm_prompt(self, q: QuestionSnapshot) -> str:
-        """将题干与选项拼装成提示词（供 LLM 使用）。"""
+        """将题干与选项（含内联 LaTeX）拼装成提示词（供 LLM 使用）。"""
         lines = [q.text]
         for opt in q.options:
             key_display = opt.key or "?"
-            lines.append(f"【{key_display}】{opt.text}")
+            lines.append(f"{opt.text}")
         return "\n".join(lines)
+
 
     @staticmethod
     def normalize_letter_answer(ans: str, valid_letters: List[str]) -> Optional[str]:
@@ -545,7 +648,8 @@ class QuizSolver:
 
                 # 2) 填空 / 程序填空
                 elif "FILL" in q.qtype:
-                    llm_input = q.text  # 填空题一般没有选项，直接用题干即可
+                    # q.text 已经包含题干 + 原位置的 [公式: ...]
+                    llm_input = q.text
                     system_prompt = "请完成以下填空题，直接输出填入内容，不要使用代码块。"
                     llm_answer = self.llm.ask(system_prompt, llm_input)
                     logging.info("LLM 返回(填空): %s", llm_answer)
@@ -563,10 +667,9 @@ class QuizSolver:
                     system_prompt = (
                         "你现在在一个在线判题系统中作答编程题。\n"
                         "我会给你：\n"
-                        "1. 题目描述（【题目描述】段落）；\n"
-                        "2. 系统给出的起始代码（【系统给出的起始代码】段落，如果存在）；\n"
-                        "3. 当前编辑器里的代码（【当前编辑器中的代码】段落，如果存在）。\n\n"
-                        f"请只使用{self.language}，在不破坏题目已有代码框架的前提下，补全或修改代码，使之通过所有测试。\n"
+                        "1. 题目描述（段落）；\n"
+                        "2. 系统给出的起始代码（如果有）；\n\n"
+                        f"请只使用{self.language}，在不破坏题目已有代码框架的前提下（如果有），写出或补全代码，使之通过所有测试。\n"
                         "要求：\n"
                         "1. 直接输出最终完整代码文本，如果要求在前置代码基础上添加，则只输出需要添加的内容；\n"
                         "2. 不要使用 Markdown 代码块标记；\n"
@@ -630,6 +733,7 @@ def main() -> None:
     password = cfg.get("password", "")
     deepseek_api_key = cfg.get("deepseek_api_key", "")
     chromedriver_path = cfg.get("chromedriver_path", "")
+    enable_latex_ocr = cfg.get("enable_latex_ocr", False)
 
     if not (username and password and deepseek_api_key):
         raise SystemExit("config.json 缺少必要字段（username/password/deepseek_api_key）")
@@ -649,6 +753,7 @@ def main() -> None:
             llm=llm,
             language=language,
             wait_seconds=DEFAULT_WAIT_SECONDS,
+            enable_latex_ocr=enable_latex_ocr,
         )
         solver.login(question_url, username, password)
         solver.run()
