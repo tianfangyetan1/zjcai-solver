@@ -47,7 +47,7 @@ pip install -r requirements.txt
 
 编辑仓库根目录下的 `config.json`：
 
-```json
+```js
 {
   "username": "", // 该网站的用户名
   "password": "", // 该网站的密码
