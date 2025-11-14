@@ -643,7 +643,7 @@ class QuizSolver:
                 # 1) 单选 / 判断
                 if ("SINGLE" in q.qtype) or ("JUDGE" in q.qtype):
                     llm_input = self.build_llm_prompt(q)
-                    system_prompt = "请完成以下选择题，直接输出选项大写字母，不要使用代码块。"
+                    system_prompt = "请完成以下{self.language}选择题，直接输出选项大写字母，不要使用代码块。"
                     llm_answer = self.llm.ask(system_prompt, llm_input)
                     logging.info("LLM 返回(选择题): %s", llm_answer)
 
@@ -659,10 +659,9 @@ class QuizSolver:
                 elif "FILL" in q.qtype:
                     # q.text 已经包含题干 + 原位置的 [公式: ...]
                     llm_input = q.text
-                    system_prompt = "请完成以下填空题，直接输出填入内容，不要使用代码块。"
+                    system_prompt = "请完成以下{self.language}填空题，直接输出填入内容，不要使用代码块。"
                     llm_answer = self.llm.ask(system_prompt, llm_input)
                     logging.info("LLM 返回(填空): %s", llm_answer)
-
                     logging.debug("填空输入框快照: %s", self.snapshot_fill_blanks())
                     self.fill_blanks(llm_answer)
 
@@ -701,7 +700,7 @@ class QuizSolver:
             # 翻到下一题
             is_last = self.go_next_question(q_el)
             if is_last:
-                logging.info("已到最后一题，流程结束。")
+                logging.info("已到最后一题，程序结束。")
                 break
 
             count += 1
