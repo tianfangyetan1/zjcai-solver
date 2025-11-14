@@ -1,6 +1,6 @@
 # Zjcai Solvers
 
-本仓库包的脚本用于在浏览器中自动完成 [zjcai.com](https://zjcai.com) 的在线题目，并调用 DeepSeek API 自动填充答案。
+本仓库的脚本用于在浏览器中自动完成 [zjcai.com](https://zjcai.com) 的在线题目，并调用 DeepSeek API 自动填充答案。
 
 ## TODO
 
