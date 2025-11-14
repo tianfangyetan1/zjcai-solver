@@ -45,7 +45,7 @@ pip install -r requirements.txt
 
 ### 5. 修改配置文件
 
-编辑仓库根目录下的 `config.json`：
+编辑仓库根目录下的 `config.json`（不要添加注释）：
 
 ```js
 {
