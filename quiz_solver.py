@@ -54,6 +54,9 @@ SELECTORS = {
         "[contenteditable='true']"
     ),
 
+    # 代码题文本编辑器前置内容
+    "code_template_pre": ".question-answer pre, pre[data-lang]",
+
     # 保存 & 翻题
     "save_button_id": "cmd_saveQuestion",
     "next_button_id": "cmd_next",
@@ -200,14 +203,59 @@ class QuizSolver:
         return QuestionSnapshot(qid=qid, qtype=qtype, text=q_text, options=options)
 
     def get_question_text_for_code(self) -> str:
-        """用于代码题的题面文本（可包含多个 question-face）。"""
+        """
+        用于代码题的完整提示文本：
+        - 题目描述（question-face）
+        - 文本编辑器前置代码（题目给的代码骨架 / 示例，通常在 <pre> 里）
+        - 当前编辑器中的代码（如果已经有内容，方便增量修改）
+        """
+        # 1) 题干（可能有多个 .question-face）
         faces = self.driver.find_elements(By.CSS_SELECTOR, SELECTORS["question_faces"])
-        raw = "\n".join((el.get_attribute("textContent") or "").strip() for el in faces)
+        face_text_raw = "\n".join(
+            (el.get_attribute("textContent") or "").strip() for el in faces
+        )
+
         # 压缩空白
-        raw = re.sub(r"\r?\n\s*\r?\n+", "\n", raw)
-        raw = re.sub(r"[\t\x0b\x0c]+", " ", raw)
-        raw = re.sub(r"\s+", " ", raw).strip()
-        return raw
+        face_text = re.sub(r"\r?\n\s*\r?\n+", "\n", face_text_raw)
+        face_text = re.sub(r"[\t\x0b\x0c]+", " ", face_text)
+        face_text = re.sub(r"\s+", " ", face_text).strip()
+
+        # 2) 题目给的起始代码（pre 里的内容）
+        template_codes: list[str] = []
+        for pre in self.driver.find_elements(By.CSS_SELECTOR, SELECTORS["code_template_pre"]):
+            txt = (pre.get_attribute("textContent") or "").replace("\r\n", "\n")
+            txt = txt.strip("\n")
+            if txt:
+                template_codes.append(txt)
+
+        # 3) 当前编辑器里的代码（有些题你可能已经写了一部分）
+        current_editor_code = ""
+        try:
+            ta = self.driver.find_element(By.CSS_SELECTOR, "textarea.question-design-input")
+            current_editor_code = (ta.get_attribute("value") or "").strip()
+        except NoSuchElementException:
+            pass
+
+        parts: list[str] = []
+
+        if face_text:
+            parts.append("【题目描述】")
+            parts.append(face_text)
+
+        if template_codes:
+            parts.append("【系统给出的起始代码（不要随意删除，通常是 main 函数等框架）】")
+            parts.append("\n\n".join(template_codes))
+
+        if current_editor_code:
+            parts.append("【当前编辑器中的代码（在此基础上继续完善）】")
+            parts.append(current_editor_code)
+
+        # 如果什么都没有，就返回原始 face_text_raw 做兜底
+        if not parts:
+            return face_text_raw.strip()
+
+        # 用空行拼接，保留代码的换行
+        return "\n\n".join(parts)
 
     # ---------- 作答：单选/判断 ----------
     def click_single_choice(self, letter: str) -> None:
@@ -506,15 +554,24 @@ class QuizSolver:
                     self.fill_blanks(llm_answer)
 
                 # 3) 其它大题：程序设计 / SQL / 设计题 / 简答等，按“代码题”处理
-                else:
+                elif any(t in q.qtype for t in ("PROGRAM", "SQL", "DESIGN", "CORRECT", "DB_SQL")):
                     prompt_text = self.get_question_text_for_code()
                     logging.debug("代码题题面：%s", prompt_text)
 
                     self.ensure_editor_present()
 
                     system_prompt = (
-                        f"请使用{self.language}完成以下需求，"
-                        f"不要使用注释，不要使用代码块。"
+                        "你现在在一个在线判题系统中作答编程题。\n"
+                        "我会给你：\n"
+                        "1. 题目描述（【题目描述】段落）；\n"
+                        "2. 系统给出的起始代码（【系统给出的起始代码】段落，如果存在）；\n"
+                        "3. 当前编辑器里的代码（【当前编辑器中的代码】段落，如果存在）。\n\n"
+                        f"请只使用{self.language}，在不破坏题目已有代码框架的前提下，补全或修改代码，使之通过所有测试。\n"
+                        "要求：\n"
+                        "1. 直接输出最终完整代码文本，如果要求在前置代码基础上添加，则只输出需要添加的内容；\n"
+                        "2. 不要使用 Markdown 代码块标记；\n"
+                        "3. 不要输出任何解释性文字；\n"
+                        "4. 不要添加注释。"
                     )
                     llm_answer = self.llm.ask(system_prompt, prompt_text)
                     logging.info("LLM 返回(代码题) %d 字符", len(llm_answer))
@@ -523,6 +580,8 @@ class QuizSolver:
                         logging.warning("未能写入富文本/代码编辑器，或未找到可写节点。")
 
                     self.try_click_save()
+                else:
+                    logging.warning("未知题型 %s，暂时跳过或仅记录。", q.qtype)
 
             except Exception as e:
                 logging.exception("答题过程中出错: %s", e)
