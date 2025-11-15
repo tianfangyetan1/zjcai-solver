@@ -674,15 +674,25 @@ class QuizSolver:
 
     @staticmethod
     def normalize_letter_answer(ans: str, valid_letters: List[str]) -> Optional[str]:
-        """从 LLM 返回文本中提取有效选项字母。"""
+        """从 LLM 返回文本中提取有效选项字母：
+        - 若只有一个字母，就用这个字母；
+        - 若有多个字母，则使用“最后一个”且在 valid_letters 中的字母。
+        """
         if not ans:
             return None
+
         text = ans.strip().upper()
-        m = re.search(r"([A-Z])", text)
-        if m:
-            letter = m.group(1)
-            if not valid_letters or letter in valid_letters:
+        # 找出所有 A-Z 字母
+        letters = re.findall(r"[A-Z]", text)
+        if not letters:
+            return None
+
+        # 从后往前找第一个合法的字母
+        for letter in reversed(letters):
+            if (not valid_letters) or (letter in valid_letters):
                 return letter
+
+        # 有字母但都不在 valid_letters 里
         return None
 
     # ---------- 主流程 ----------
@@ -748,7 +758,7 @@ class QuizSolver:
 
                     self.try_click_save()
                 else:
-                    logging.warning("未知题型 %s，暂时跳过或仅记录。", q.qtype)
+                    logging.warning("未知题型 %s，跳过。", q.qtype)
 
             except Exception as e:
                 logging.exception("答题过程中出错: %s", e)
