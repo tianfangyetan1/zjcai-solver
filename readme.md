@@ -34,7 +34,7 @@ pip install -r requirements.txt
 
 1. 前往 [Chrome for Testing availability](https://googlechromelabs.github.io/chrome-for-testing/#stable) 下载和你的 Chrome 大版本相同的 Chrome Driver。
    
-2. 将下载后的文件保存在合适的位置，并将路径填入 `config.json`（见第 5 节）。
+2. 将下载后的 `chromedriver.exe` 保存在合适的位置，并将路径填入 `config.json`（见第 5 节）。
 
 ### 5. 修改配置文件
 
@@ -53,14 +53,14 @@ pip install -r requirements.txt
 
 ## 常见问题
 
-### 启动很慢怎么办？
+### 1. 启动很慢怎么办？
 
-默认情况下，Selenium 会在运行时自动下载合适的 Chrome Driver 版本。如果下载速度很慢，可以[手动下载并配置路径](https://github.com/tianfangyetan1/zjcai-solver?tab=readme-ov-file#3-配置-chrome-driver可选)。
+默认情况下，Selenium 会在运行时自动下载合适的 Chrome Driver 版本。如果下载速度很慢，可以[手动下载并配置路径](https://github.com/tianfangyetan1/zjcai-solver/edit/main/readme.md#4-%E9%85%8D%E7%BD%AE-chrome-driver%E5%8F%AF%E9%80%89)。
 
-### 初始化 LaTeX-OCR 模型时卡住怎么办？
+### 2. 初始化 LaTeX-OCR 模型时卡住怎么办？
 
-首次使用需要下载模型数据，成为*魔法少女*可以加快这一步骤。
+首次使用需要下载模型数据，~~成为*魔法少女*可以加快这一步骤~~。
 
-### LLM 生成的回答质量较差怎么办？
+### 3. LLM 生成的回答质量较差怎么办？
 
 默认使用的模型是 `deepseek-chat`（未开启深度思考），设置为 `deepseek-reasoner` 可以开启深度思考，但是回答速度会变慢，而且消耗的 token 更多。
