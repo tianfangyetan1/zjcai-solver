@@ -55,7 +55,7 @@ pip install -r requirements.txt
 
 ### 1. 启动很慢怎么办？
 
-默认情况下，Selenium 会在运行时自动下载合适的 Chrome Driver 版本。如果下载速度很慢，可以[手动下载并配置路径](https://github.com/tianfangyetan1/zjcai-solver/edit/main/readme.md#4-%E9%85%8D%E7%BD%AE-chrome-driver%E5%8F%AF%E9%80%89)。
+默认情况下，Selenium 会在运行时自动下载合适的 Chrome Driver 版本。如果下载速度很慢，可以[手动下载并配置路径](https://github.com/tianfangyetan1/zjcai-solver?tab=readme-ov-file#4-%E9%85%8D%E7%BD%AE-chrome-driver%E5%8F%AF%E9%80%89)。
 
 ### 2. 初始化 LaTeX-OCR 模型时卡住怎么办？
 
