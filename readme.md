@@ -8,13 +8,21 @@
 
 ## 使用方法
 
-### 1. 安装依赖
+### 1. 安装 Microsoft Visual C++ Build Tools（可选）
+
+如果你不需要识别图片中的公式，可以跳过此步骤。
+
+1. 下载 [Build Tools for Visual Studio](https://visualstudio.microsoft.com/zh-hant/visual-cpp-build-tools/)。
+   
+2. 安装时勾选“使用 C++ 的桌面开发（Desktop development with C++）”这一整块，或者至少包含：MSVC v14.x 生成工具、Windows 10/11 SDK。
+
+### 2. 安装所需模块
 
 ```bash
 pip install -r requirements.txt
 ```
 
-### 2. 获取 DeepSeek API Key
+### 3. 获取 DeepSeek API Key
 
 1. 注册/登录 [DeepSeek 开放平台](https://platform.deepseek.com/)，创建 API Key 并充值。
    
@@ -22,23 +30,11 @@ pip install -r requirements.txt
    
 3. 将其写入仓库根目录的 `config.json`（见第 5 节）。
 
-### 3. 配置 Chrome Driver（可选）
+### 4. 配置 Chrome Driver（可选）
 
 1. 前往 [Chrome for Testing availability](https://googlechromelabs.github.io/chrome-for-testing/#stable) 下载和你的 Chrome 大版本相同的 Chrome Driver。
    
 2. 将下载后的文件保存在合适的位置，并将路径填入 `config.json`（见第 5 节）。
-
-### 4. 安装 Microsoft Visual C++ Build Tools（可选）
-
-如果你不需要识别图片中的公式，可以跳过此步骤。
-
-1. 下载 [Build Tools for Visual Studio](https://visualstudio.microsoft.com/zh-hant/visual-cpp-build-tools/)。
-   
-2. 安装时勾选“使用 C++ 的桌面开发（Desktop development with C++）”这一整块，
-  
-   或者至少包含：MSVC v14.x 生成工具、Windows 10/11 SDK。
-
-3. 再次执行第 1 节中的操作。
 
 ### 5. 修改配置文件
 
