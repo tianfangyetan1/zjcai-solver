@@ -18,9 +18,17 @@
 
 ### 2. 安装所需模块
 
-```bash
-pip install -r requirements.txt
-```
+- 包含图片公式识别
+
+  ```bash
+  pip install -r requirements.txt
+  ```
+
+- 不包含图片公式识别
+
+  ```bash
+  pip install -r requirements-without-latex.txt
+  ```
 
 ### 3. 获取 DeepSeek API Key
 
