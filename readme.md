@@ -8,6 +8,11 @@
 
 ## 使用方法
 
+### 0. 前置条件
+
+- 安装 [Python](https://www.python.org/)
+- 安装 [Chrome](https://www.google.com/chrome/?standalone=1&platform=win64)
+
 ### 1. 安装 Microsoft Visual C++ Build Tools（可选）
 
 如果你不需要识别图片中的公式，可以跳过此步骤。
