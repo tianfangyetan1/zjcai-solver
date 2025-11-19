@@ -55,10 +55,16 @@
 
 ```js
 {
-  "username": "", // 该网站的用户名
-  "password": "", // 该网站的密码
+  "account": {
+    "username": "", // 该网站的用户名
+    "password": "" // 该网站的密码
+  },
   "deepseek_api_key": "sk-xxxxxxxxxxxxxxxxxxxxxxxx",
-  "llm_model": "deepseek-chat", // 调用的模型
+  "llm_models": {
+    "normal": "deepseek-chat", // 未深度思考
+    "reasoner": "deepseek-reasoner" // 启用深度思考
+  },
+  "enable_reasoning": false, // 是否启用深度思考
   "chromedriver_path": "", // Chrome Driver 的路径（可选）
   "enable_latex_ocr": true // 启用 latex 公式识别（默认为false）
 }

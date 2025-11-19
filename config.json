@@ -1,8 +1,14 @@
 {
-    "username": "",
-    "password": "",
+    "account": {
+        "username": "",
+        "password": ""
+    },
     "deepseek_api_key": "",
-    "llm_model": "deepseek-chat",
+    "llm_models": {
+        "normal": "deepseek-chat",
+        "reasoner": "deepseek-reasoner"
+    },
+    "enable_reasoning": false,
     "chromedriver_path": "",
-    "enable_latex_ocr": false
+    "enable_latex_ocr": true
 }

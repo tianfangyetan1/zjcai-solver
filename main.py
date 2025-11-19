@@ -221,7 +221,7 @@ class QuizSolver:
         llm: DeepSeekClient,
         language: str = "C语言",
         wait_seconds: int = DEFAULT_WAIT_SECONDS,
-        enable_latex_ocr: bool = False,  # 新增开关
+        enable_latex_ocr: bool = False,
     ):
         self.driver = driver
         self.wait = WebDriverWait(driver, wait_seconds)
@@ -331,6 +331,7 @@ class QuizSolver:
                             continue
                         img = Image.open(BytesIO(png_bytes)).convert("RGB")
                         latex = str(self.latex_ocr_model(img) or "").strip()
+                        logging.debug("公式 %d: %s", idx, latex)
                         formulas.append(latex)
                     except Exception as e:
                         logging.warning("LaTeX-OCR 识别第 %d 张图片失败：%s", idx, e)
@@ -803,12 +804,26 @@ def main() -> None:
     )
 
     cfg = load_config()
-    username = cfg.get("username", "")
-    password = cfg.get("password", "")
+
+    account_cfg = cfg.get("account")
+    if not isinstance(account_cfg, dict):
+        raise SystemExit("config.json 缺少 account 节点或格式不正确")
+    username = account_cfg.get("username", "")
+    password = account_cfg.get("password", "")
+
     deepseek_api_key = cfg.get("deepseek_api_key", "")
-    llm_model = cfg.get("llm_model", "deepseek-chat")
     chromedriver_path = cfg.get("chromedriver_path", "")
     enable_latex_ocr = cfg.get("enable_latex_ocr", False)
+
+    llm_models = cfg.get("llm_models")
+    if not isinstance(llm_models, dict):
+        raise SystemExit("config.json 缺少 llm_models 节点或格式不正确")
+    normal_model = llm_models.get("normal", "")
+    reasoner_model = llm_models.get("reasoner", "") or normal_model
+    if not normal_model:
+        raise SystemExit("config.json->llm_models.normal 不能为空")
+    enable_reasoning = bool(cfg.get("enable_reasoning", False))
+    llm_model = reasoner_model if enable_reasoning and reasoner_model else normal_model
 
     if not (username and password and deepseek_api_key):
         raise SystemExit("config.json 缺少必要字段（username/password/deepseek_api_key）")
@@ -817,7 +832,7 @@ def main() -> None:
     if not question_url:
         raise SystemExit("未输入答题链接，已退出。")
 
-    language = input("请输入代码题编程语言（例如 C语言、C++、Java、Python 等）：").strip() or "C语言"
+    language = input("请输入编程语言（例如 C语言、C++、Java、Python 等）：").strip() or "C语言"
 
     llm = DeepSeekClient(api_key=deepseek_api_key, model=llm_model)
     driver = build_driver(chromedriver_path)
