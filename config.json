@@ -9,6 +9,11 @@
         "reasoner": "deepseek-reasoner"
     },
     "enable_reasoning": false,
+    "reasoning_by_type": {
+        "single_or_judge": false,
+        "fill_blank": false,
+        "programming": false
+    },
     "chromedriver_path": "",
     "enable_latex_ocr": true
 }
