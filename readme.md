@@ -57,25 +57,23 @@
 ```js
 {
   "account": {
-    "username": "", // 该网站的用户名
-    "password": "" // 该网站的密码
+    "username": "",   // 该网站的用户名
+    "password": ""    // 该网站的密码
   },
   "deepseek_api_key": "sk-xxxxxxxxxxxxxxxxxxxxxxxx",
   "llm_models": {
-    "normal": "deepseek-chat", // 未深度思考
+    "normal": "deepseek-chat",      // 未启用深度思考
     "reasoner": "deepseek-reasoner" // 启用深度思考
   },
-  "enable_reasoning": { // 分题型控制是否默认使用深度思考
-    "single_or_judge": false, // 单选 / 判断题
-    "fill_blank": false, // 填空题
-    "programming": true // 代码 / SQL / 设计等大题
+  "enable_reasoning": {    // 分题型控制是否启用深度思考
+    "single_or_judge": false,   // 单选 / 判断题
+    "fill_blank": false,        // 填空题
+    "programming": false        // 代码 / SQL / 设计等大题
   },
-  "chromedriver_path": "", // Chrome Driver 的路径（可选）
-  "enable_latex_ocr": true // 启用 latex 公式识别（默认为false）
+  "chromedriver_path": "",   // Chrome Driver 的路径（可选）
+  "enable_latex_ocr": true   // 启用 latex 公式识别（默认为false）
 }
 ```
-
-如果你只想在特定题型开启深度思考，只需把对应的 `enable_reasoning.xxx` 设为 `true`，其他保持 `false`（或删除该字段）即可。
 
 ## 常见问题
 
@@ -89,4 +87,6 @@
 
 ### 3. LLM 生成的回答质量较差怎么办？
 
-默认使用的模型是 `deepseek-chat`（未开启深度思考），设置为 `deepseek-reasoner` 可以开启深度思考，但是回答速度会变慢，而且消耗的 token 更多。
+默认不开启深度思考，开启深度思考可以提升回答质量，但是回答速度会变慢，而且消耗的 token 更多。
+
+`config.json` 中 `enable_reasoning` 配置项可以分别设置每种题型是否开启深度思考。
