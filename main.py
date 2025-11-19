@@ -235,13 +235,13 @@ class QuizSolver:
         language: str = "C语言",
         wait_seconds: int = DEFAULT_WAIT_SECONDS,
         enable_latex_ocr: bool = False,
-        reasoning_by_type: Optional[Dict[str, bool]] = None,
+        enable_reasoning: Optional[Dict[str, bool]] = None,
     ):
         self.driver = driver
         self.wait = WebDriverWait(driver, wait_seconds)
         self.llm = llm
         self.language = language or "C语言"
-        self.reasoning_by_type: Dict[str, bool] = dict(reasoning_by_type or {})
+        self.enable_reasoning: Dict[str, bool] = dict(enable_reasoning or {})
 
         # ---- LaTeX-OCR（题目/选项图片 → LaTeX 公式）----
         self.latex_ocr_model = None
@@ -315,7 +315,7 @@ class QuizSolver:
         """根据题型分组判断是否启用深度思考模型。"""
         if not qtype_group:
             return False
-        return bool(self.reasoning_by_type.get(qtype_group, False))
+        return bool(self.enable_reasoning.get(qtype_group, False))
     
     # ---------- DOM 元素 → 文本（图片位置内联 LaTeX） ----------
     def render_element_text_with_inline_latex(self, element) -> str:
@@ -858,7 +858,7 @@ def main() -> None:
     reasoning_cfg_raw = cfg.get("enable_reasoning")
     reasoning_cfg = reasoning_cfg_raw if isinstance(reasoning_cfg_raw, dict) else {}
 
-    reasoning_by_type = {
+    enable_reasoning = {
         "single_or_judge": bool(reasoning_cfg.get("single_or_judge", False)),
         "fill_blank": bool(reasoning_cfg.get("fill_blank", False)),
         "programming": bool(reasoning_cfg.get("programming", False)),
@@ -887,7 +887,7 @@ def main() -> None:
             language=language,
             wait_seconds=DEFAULT_WAIT_SECONDS,
             enable_latex_ocr=enable_latex_ocr,
-            reasoning_by_type=reasoning_by_type,
+            enable_reasoning=enable_reasoning,
         )
         solver.login(question_url, username, password)
         solver.run()
