@@ -8,7 +8,6 @@
         "normal": "deepseek-chat",
         "reasoner": "deepseek-reasoner"
     },
-    "enable_reasoning": false,
     "reasoning_by_type": {
         "single_or_judge": false,
         "fill_blank": false,

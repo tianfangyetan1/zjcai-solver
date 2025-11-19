@@ -855,19 +855,13 @@ def main() -> None:
     reasoner_model = llm_models.get("reasoner", "") or normal_model
     if not normal_model:
         raise SystemExit("config.json->llm_models.normal 不能为空")
-    enable_reasoning = bool(cfg.get("enable_reasoning", False))
     reasoning_cfg_raw = cfg.get("reasoning_by_type")
     reasoning_cfg = reasoning_cfg_raw if isinstance(reasoning_cfg_raw, dict) else {}
 
-    def _reasoning_flag(key: str) -> bool:
-        if key in reasoning_cfg:
-            return bool(reasoning_cfg[key])
-        return enable_reasoning
-
     reasoning_by_type = {
-        "single_or_judge": _reasoning_flag("single_or_judge"),
-        "fill_blank": _reasoning_flag("fill_blank"),
-        "programming": _reasoning_flag("programming"),
+        "single_or_judge": bool(reasoning_cfg.get("single_or_judge", False)),
+        "fill_blank": bool(reasoning_cfg.get("fill_blank", False)),
+        "programming": bool(reasoning_cfg.get("programming", False)),
     }
 
     if not (username and password and deepseek_api_key):
