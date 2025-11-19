@@ -855,7 +855,7 @@ def main() -> None:
     reasoner_model = llm_models.get("reasoner", "") or normal_model
     if not normal_model:
         raise SystemExit("config.json->llm_models.normal 不能为空")
-    reasoning_cfg_raw = cfg.get("reasoning_by_type")
+    reasoning_cfg_raw = cfg.get("enable_reasoning")
     reasoning_cfg = reasoning_cfg_raw if isinstance(reasoning_cfg_raw, dict) else {}
 
     reasoning_by_type = {

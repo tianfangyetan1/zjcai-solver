@@ -65,7 +65,7 @@
     "normal": "deepseek-chat", // 未深度思考
     "reasoner": "deepseek-reasoner" // 启用深度思考
   },
-  "reasoning_by_type": { // 分题型控制是否默认使用深度思考
+  "enable_reasoning": { // 分题型控制是否默认使用深度思考
     "single_or_judge": false, // 单选 / 判断题
     "fill_blank": false, // 填空题
     "programming": true // 代码 / SQL / 设计等大题
@@ -75,7 +75,7 @@
 }
 ```
 
-如果你只想在特定题型开启深度思考，只需把对应的 `reasoning_by_type.xxx` 设为 `true`，其他保持 `false`（或删除该字段）即可。
+如果你只想在特定题型开启深度思考，只需把对应的 `enable_reasoning.xxx` 设为 `true`，其他保持 `false`（或删除该字段）即可。
 
 ## 常见问题
 
