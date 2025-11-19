@@ -8,7 +8,7 @@ import time
 import logging
 from dataclasses import dataclass
 from pathlib import Path
-from typing import List, Tuple, Optional
+from typing import Dict, List, Tuple, Optional
 from io import BytesIO
 from PIL import Image
 import ctypes
@@ -189,15 +189,28 @@ class DeepSeekClient:
         self,
         api_key: str,
         base_url: str = "https://api.deepseek.com",
-        model: str = "deepseek-chat",
+        normal_model: str = "deepseek-chat",
+        reasoner_model: Optional[str] = None,
     ):
         self._client = OpenAI(api_key=api_key, base_url=base_url)
-        self._model = model
+        self._normal_model = normal_model or "deepseek-chat"
+        self._reasoner_model = (reasoner_model or "").strip()
 
-    def ask(self, system_prompt: str, user_prompt: str) -> str:
+    def ask(
+        self,
+        system_prompt: str,
+        user_prompt: str,
+        *,
+        use_reasoning: bool = False,
+    ) -> str:
         """发送对话并返回 assistant 文本."""
+        model = (
+            self._reasoner_model
+            if use_reasoning and self._reasoner_model
+            else self._normal_model
+        )
         resp = self._client.chat.completions.create(
-            model=self._model,
+            model=model,
             messages=[
                 {"role": "system", "content": system_prompt},
                 {"role": "user", "content": user_prompt},
@@ -222,11 +235,13 @@ class QuizSolver:
         language: str = "C语言",
         wait_seconds: int = DEFAULT_WAIT_SECONDS,
         enable_latex_ocr: bool = False,
+        enable_reasoning: Optional[Dict[str, bool]] = None,
     ):
         self.driver = driver
         self.wait = WebDriverWait(driver, wait_seconds)
         self.llm = llm
         self.language = language or "C语言"
+        self.enable_reasoning: Dict[str, bool] = dict(enable_reasoning or {})
 
         # ---- LaTeX-OCR（题目/选项图片 → LaTeX 公式）----
         self.latex_ocr_model = None
@@ -295,6 +310,12 @@ class QuizSolver:
             options.append(Option(key=key, text=text))
 
         return QuestionSnapshot(qid=qid, qtype=qtype, text=q_text, options=options)
+
+    def should_use_reasoning(self, qtype_group: str) -> bool:
+        """根据题型分组判断是否启用深度思考模型。"""
+        if not qtype_group:
+            return False
+        return bool(self.enable_reasoning.get(qtype_group, False))
     
     # ---------- DOM 元素 → 文本（图片位置内联 LaTeX） ----------
     def render_element_text_with_inline_latex(self, element) -> str:
@@ -711,7 +732,11 @@ class QuizSolver:
                 if ("SINGLE" in q.qtype) or ("JUDGE" in q.qtype):
                     llm_input = self.build_llm_prompt(q)
                     system_prompt = "请完成以下{self.language}选择题，直接输出选项大写字母，不要使用代码块。"
-                    llm_answer = self.llm.ask(system_prompt, llm_input)
+                    llm_answer = self.llm.ask(
+                        system_prompt,
+                        llm_input,
+                        use_reasoning=self.should_use_reasoning("single_or_judge"),
+                    )
                     logging.info("LLM 返回(选择题): %s", llm_answer)
 
                     valid_letters = [o.key for o in q.options if o.key]
@@ -727,7 +752,11 @@ class QuizSolver:
                     # q.text 已经包含题干 + 原位置的 [公式: ...]
                     llm_input = q.text
                     system_prompt = "请完成以下{self.language}填空题，直接输出填入内容，不要使用代码块。"
-                    llm_answer = self.llm.ask(system_prompt, llm_input)
+                    llm_answer = self.llm.ask(
+                        system_prompt,
+                        llm_input,
+                        use_reasoning=self.should_use_reasoning("fill_blank"),
+                    )
                     logging.info("LLM 返回(填空): %s", llm_answer)
                     logging.debug("填空输入框快照: %s", self.snapshot_fill_blanks())
                     self.fill_blanks(llm_answer)
@@ -751,7 +780,11 @@ class QuizSolver:
                         "3. 不要输出任何解释性文字；\n"
                         "4. 不要添加注释。"
                     )
-                    llm_answer = self.llm.ask(system_prompt, prompt_text)
+                    llm_answer = self.llm.ask(
+                        system_prompt,
+                        prompt_text,
+                        use_reasoning=self.should_use_reasoning("programming"),
+                    )
                     logging.info("LLM 返回(代码题) %d 字符", len(llm_answer))
 
                     if not self.set_editor_content(llm_answer):
@@ -822,8 +855,14 @@ def main() -> None:
     reasoner_model = llm_models.get("reasoner", "") or normal_model
     if not normal_model:
         raise SystemExit("config.json->llm_models.normal 不能为空")
-    enable_reasoning = bool(cfg.get("enable_reasoning", False))
-    llm_model = reasoner_model if enable_reasoning and reasoner_model else normal_model
+    reasoning_cfg_raw = cfg.get("enable_reasoning")
+    reasoning_cfg = reasoning_cfg_raw if isinstance(reasoning_cfg_raw, dict) else {}
+
+    enable_reasoning = {
+        "single_or_judge": bool(reasoning_cfg.get("single_or_judge", False)),
+        "fill_blank": bool(reasoning_cfg.get("fill_blank", False)),
+        "programming": bool(reasoning_cfg.get("programming", False)),
+    }
 
     if not (username and password and deepseek_api_key):
         raise SystemExit("config.json 缺少必要字段（username/password/deepseek_api_key）")
@@ -834,7 +873,11 @@ def main() -> None:
 
     language = input("请输入编程语言（例如 C语言、C++、Java、Python 等）：").strip() or "C语言"
 
-    llm = DeepSeekClient(api_key=deepseek_api_key, model=llm_model)
+    llm = DeepSeekClient(
+        api_key=deepseek_api_key,
+        normal_model=normal_model,
+        reasoner_model=reasoner_model,
+    )
     driver = build_driver(chromedriver_path)
 
     try:
@@ -844,6 +887,7 @@ def main() -> None:
             language=language,
             wait_seconds=DEFAULT_WAIT_SECONDS,
             enable_latex_ocr=enable_latex_ocr,
+            enable_reasoning=enable_reasoning,
         )
         solver.login(question_url, username, password)
         solver.run()
