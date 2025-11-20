@@ -68,7 +68,7 @@
   "enable_reasoning": {    // 分题型控制是否启用深度思考
     "single_or_judge": false,   // 单选 / 判断题
     "fill_blank": false,        // 填空题
-    "programming": false        // 代码 / SQL / 设计等大题
+    "programming": false        // 代码 / SQL / 程序设计等大题
   },
   "chromedriver_path": "",   // Chrome Driver 的路径（可选）
   "enable_latex_ocr": true   // 启用 latex 公式识别（默认为false）
