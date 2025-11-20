@@ -725,7 +725,7 @@ class QuizSolver:
 
             q_el = self.wait_for_question_item()
             q = self.collect_current_question()
-            logging.info("当前题型：%s", q.qtype)
+            logging.info("题型：%s", q.qtype)
 
             try:
                 # 1) 单选 / 判断
