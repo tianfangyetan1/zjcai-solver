@@ -13,6 +13,7 @@
 
 - 安装 [Python](https://www.python.org/)
 - 安装 [Chrome](https://www.google.com/chrome/?standalone=1&platform=win64)
+- （可选，但是推荐使用）安装 [VS Code](https://code.visualstudio.com/) 或者 [PyCharm](https://www.jetbrains.com/zh-cn/pycharm/)
 
 ### 1. 安装 Microsoft Visual C++ Build Tools（可选）
 
@@ -20,7 +21,7 @@
 
 1. 下载 [Build Tools for Visual Studio](https://visualstudio.microsoft.com/zh-hant/visual-cpp-build-tools/)。
    
-2. 安装时勾选“使用 C++ 的桌面开发（Desktop development with C++）”这一整块，或者至少包含：MSVC v14.x 生成工具、Windows 10/11 SDK。
+2. 安装时勾选“使用 C++ 的桌面开发 (Desktop development with C++)”这一整块，或者至少包含：MSVC v14.x 生成工具、Windows 10/11 SDK。
 
 ### 2. 安装所需模块
 
