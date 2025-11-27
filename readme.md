@@ -1,5 +1,8 @@
 # Zjcai Solvers
 
+![GitHub Release](https://img.shields.io/github/v/release/tianfangyetan1/zjcai-solver)
+![GitHub Release Date](https://img.shields.io/github/release-date/tianfangyetan1/zjcai-solver?display_date=published_at)
+
 本仓库的脚本用于在浏览器中自动完成 [zjcai.com](https://zjcai.com) 的在线题目，并调用 DeepSeek API 自动填充答案。
 
 ## TODO
@@ -75,6 +78,8 @@
   "enable_latex_ocr": true   // 启用 Latex 公式识别（默认为false）
 }
 ```
+
+本项目支持 Schemas JSON，将鼠标移动到属性名称上即可查看说明，支持校验。
 
 ## 常见问题
 
