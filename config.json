@@ -3,16 +3,16 @@
         "username": "",
         "password": ""
     },
-    "deepseek_api_key": "",
-    "llm_models": {
+    "deepseek-api-key": "",
+    "llm-models": {
         "normal": "deepseek-chat",
         "reasoner": "deepseek-reasoner"
     },
-    "enable_reasoning": {
-        "single_or_judge": false,
-        "fill_blank": false,
+    "enable-reasoning": {
+        "single-or-judge": false,
+        "fill-blank": false,
         "programming": false
     },
-    "chromedriver_path": "",
-    "enable_latex_ocr": true
+    "chromedriver-path": "",
+    "enable-latex-ocr": false
 }

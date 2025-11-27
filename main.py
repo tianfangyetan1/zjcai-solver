@@ -41,7 +41,7 @@ try:
     if cfg_path_for_import.exists():
         cfg_for_import = json.loads(cfg_path_for_import.read_text(encoding="utf-8"))
         # 和 main() 里保持一致：默认 False，未写则视为启用
-        _ENABLE_LATEX_OCR_FROM_CFG = bool(cfg_for_import.get("enable_latex_ocr", False))
+        _ENABLE_LATEX_OCR_FROM_CFG = bool(cfg_for_import.get("enable-latex-ocr", False))
 except Exception:
     # 读配置失败时，保持默认 False（和原行为尽量一致）
     _ENABLE_LATEX_OCR_FROM_CFG = False
@@ -844,23 +844,23 @@ def main() -> None:
     username = account_cfg.get("username", "")
     password = account_cfg.get("password", "")
 
-    deepseek_api_key = cfg.get("deepseek_api_key", "")
-    chromedriver_path = cfg.get("chromedriver_path", "")
-    enable_latex_ocr = cfg.get("enable_latex_ocr", False)
+    deepseek_api_key = cfg.get("deepseek-api-key", "")
+    chromedriver_path = cfg.get("chromedriver-path", "")
+    enable_latex_ocr = cfg.get("enable-latex-ocr", False)
 
-    llm_models = cfg.get("llm_models")
+    llm_models = cfg.get("llm-models")
     if not isinstance(llm_models, dict):
         raise SystemExit("config.json 缺少 llm_models 节点或格式不正确")
     normal_model = llm_models.get("normal", "")
     reasoner_model = llm_models.get("reasoner", "") or normal_model
     if not normal_model:
         raise SystemExit("config.json->llm_models.normal 不能为空")
-    reasoning_cfg_raw = cfg.get("enable_reasoning")
+    reasoning_cfg_raw = cfg.get("enable-reasoning")
     reasoning_cfg = reasoning_cfg_raw if isinstance(reasoning_cfg_raw, dict) else {}
 
     enable_reasoning = {
-        "single_or_judge": bool(reasoning_cfg.get("single_or_judge", False)),
-        "fill_blank": bool(reasoning_cfg.get("fill_blank", False)),
+        "single_or_judge": bool(reasoning_cfg.get("single-or-judge", False)),
+        "fill_blank": bool(reasoning_cfg.get("fill-blank", False)),
         "programming": bool(reasoning_cfg.get("programming", False)),
     }
 
