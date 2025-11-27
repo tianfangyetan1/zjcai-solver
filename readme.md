@@ -72,7 +72,7 @@
     "programming": false        // 代码 / SQL / 程序设计等大题
   },
   "chromedriver_path": "",   // Chrome Driver 的路径（可选）
-  "enable_latex_ocr": true   // 启用 latex 公式识别（默认为false）
+  "enable_latex_ocr": true   // 启用 Latex 公式识别（默认为false）
 }
 ```
 
