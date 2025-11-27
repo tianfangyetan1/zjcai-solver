@@ -1,7 +1,7 @@
 # Zjcai Solvers
 
-![GitHub Release](https://img.shields.io/github/v/release/tianfangyetan1/zjcai-solver)
-![GitHub Release Date](https://img.shields.io/github/release-date/tianfangyetan1/zjcai-solver?display_date=published_at)
+[![GitHub Release](https://img.shields.io/github/v/release/tianfangyetan1/zjcai-solver)](https://github.com/tianfangyetan1/zjcai-solver/releases/latest)
+[![GitHub Release Date](https://img.shields.io/github/release-date/tianfangyetan1/zjcai-solver?display_date=published_at)](https://github.com/tianfangyetan1/zjcai-solver/releases/latest)
 
 本仓库的脚本用于在浏览器中自动完成 [zjcai.com](https://zjcai.com) 的在线题目，并调用 DeepSeek API 自动填充答案。
 
