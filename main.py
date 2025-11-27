@@ -850,11 +850,11 @@ def main() -> None:
 
     llm_models = cfg.get("llm-models")
     if not isinstance(llm_models, dict):
-        raise SystemExit("config.json 缺少 llm_models 节点或格式不正确")
+        raise SystemExit("config.json 缺少 llm-models 节点或格式不正确")
     normal_model = llm_models.get("normal", "")
     reasoner_model = llm_models.get("reasoner", "") or normal_model
     if not normal_model:
-        raise SystemExit("config.json->llm_models.normal 不能为空")
+        raise SystemExit("config.json -> llm-models.normal 不能为空")
     reasoning_cfg_raw = cfg.get("enable-reasoning")
     reasoning_cfg = reasoning_cfg_raw if isinstance(reasoning_cfg_raw, dict) else {}
 
@@ -865,7 +865,7 @@ def main() -> None:
     }
 
     if not (username and password and deepseek_api_key):
-        raise SystemExit("config.json 缺少必要字段（username/password/deepseek_api_key）")
+        raise SystemExit("config.json 缺少必要字段（username/password/deepseek-api-key）")
 
     question_url = input("请输入答题链接：").strip()
     if not question_url:
