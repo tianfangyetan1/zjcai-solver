@@ -134,8 +134,8 @@ def clean_whitespace(s: str) -> str:
 
 
 def split_fill_answer(raw: str) -> List[str]:
-    """将 LLM 返回的填空答案切分为每空一项，支持 | 、英文/中文逗号 作为分隔符。"""
-    parts = [p.strip() for p in re.split(r"[|,，]", raw or "")]
+    """将 LLM 返回的填空答案按 | 分隔切分为每空一项；其他字符不做分割。"""
+    parts = [p.strip() for p in (raw or "").split("|")]
     return [p for p in parts if p]
 
 
@@ -487,7 +487,7 @@ class QuizSolver:
             return 0
 
     def fill_blanks(self, answer_text: str) -> None:
-        """将答案按顺序填入所有空；支持以 | 或 , 分隔；存在“保存”按钮时自动点击保存。"""
+        """将答案按顺序填入所有空；仅以 | 分隔；存在“保存”按钮时自动点击保存。"""
         parts = split_fill_answer(answer_text)
         inputs = self.driver.find_elements(By.CSS_SELECTOR, SELECTORS["blank_inputs"])
         for idx, inp in enumerate(inputs):
