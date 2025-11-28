@@ -6,6 +6,7 @@ import os
 import re
 import time
 import logging
+import sys
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Dict, List, Tuple, Optional
@@ -853,6 +854,7 @@ def main() -> None:
     logging.basicConfig(
         level=logging.INFO,
         format="%(asctime)s | %(levelname)s | %(message)s",
+        stream=sys.stdout,
     )
 
     cfg = load_config()
