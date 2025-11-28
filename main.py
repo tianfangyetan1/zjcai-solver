@@ -477,6 +477,15 @@ class QuizSolver:
             )
         return result
 
+    def count_blank_inputs(self) -> int:
+        """返回当前填空题的空格数量。"""
+        try:
+            return len(
+                self.driver.find_elements(By.CSS_SELECTOR, SELECTORS["blank_inputs"])
+            )
+        except Exception:
+            return 0
+
     def fill_blanks(self, answer_text: str) -> None:
         """将答案按顺序填入所有空；支持以 | 或 , 分隔；存在“保存”按钮时自动点击保存。"""
         parts = split_fill_answer(answer_text)
@@ -751,7 +760,17 @@ class QuizSolver:
                 elif "FILL" in q.qtype:
                     # q.text 已经包含题干 + 原位置的 [公式: ...]
                     llm_input = q.text
-                    system_prompt = "请完成以下{self.language}填空题，直接输出填入内容，不要使用代码块。"
+                    blank_count = self.count_blank_inputs()
+                    separator_hint = (
+                        f"共有{blank_count}个空，请按顺序使用竖线 | 分隔各空答案，"
+                        "不要添加其他内容。"
+                        if blank_count > 1
+                        else ""
+                    )
+                    system_prompt = (
+                        f"请完成以下{self.language}填空题，直接输出填入内容，不要使用代码块。"
+                        f"{separator_hint}"
+                    )
                     llm_answer = self.llm.ask(
                         system_prompt,
                         llm_input,
