@@ -67,18 +67,18 @@
     "username": "",   // 该网站的用户名
     "password": ""    // 该网站的密码
   },
-  "deepseek_api_key": "sk-xxxxxxxxxxxxxxxxxxxxxxxx",
-  "llm_models": {
+  "deepseek-api-key": "sk-xxxxxxxxxxxxxxxxxxxxxxxx",
+  "llm-models": {
     "normal": "deepseek-chat",      // 未启用深度思考
     "reasoner": "deepseek-reasoner" // 启用深度思考
   },
-  "enable_reasoning": {    // 分题型控制是否启用深度思考
-    "single_or_judge": false,   // 单选 / 判断题
-    "fill_blank": false,        // 填空题
+  "enable-reasoning": {    // 分题型控制是否启用深度思考
+    "single-or-judge": false,   // 单选 / 判断题
+    "fill-blank": false,        // 填空题
     "programming": false        // 代码 / SQL / 程序设计等大题
   },
-  "chromedriver_path": "",   // Chrome Driver 的路径（可选）
-  "enable_latex_ocr": true   // 启用 Latex 公式识别（默认为false）
+  "chromedriver-path": "",   // Chrome Driver 的路径（可选）
+  "enable-latex-ocr": true   // 启用 Latex 公式识别（默认为false）
 }
 ```
 
