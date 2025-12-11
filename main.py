@@ -741,7 +741,7 @@ class QuizSolver:
                 # 1) 单选 / 判断
                 if ("SINGLE" in q.qtype) or ("JUDGE" in q.qtype):
                     llm_input = self.build_llm_prompt(q)
-                    system_prompt = "请完成以下{self.language}选择题，直接输出选项大写字母，不要使用代码块。"
+                    system_prompt = f"请完成以下{self.language}选择题，直接输出选项大写字母，不要使用代码块。"
                     llm_answer = self.llm.ask(
                         system_prompt,
                         llm_input,
