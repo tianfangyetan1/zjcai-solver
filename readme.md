@@ -14,6 +14,7 @@
 
 ### 0. 前置条件
 
+- 克隆本仓库
 - 安装 [Python](https://www.python.org/)
 - 安装 [Chrome](https://www.google.com/chrome/?standalone=1&platform=win64)
 - （可选，但是推荐使用）安装 [VS Code](https://code.visualstudio.com/) 或者 [PyCharm](https://www.jetbrains.com/zh-cn/pycharm/)
