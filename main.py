@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import json
+import html
 import os
 import re
 import time
@@ -131,7 +132,9 @@ class QuestionSnapshot:
 
 def clean_whitespace(s: str) -> str:
     """压缩任意空白字符为单空格，并去除首尾空白。"""
-    return re.sub(r"\s+", " ", s or "").strip()
+    s = html.unescape(s or "")
+    s = s.replace("\xa0", " ")
+    return re.sub(r"\s+", " ", s).strip()
 
 
 def split_fill_answer(raw: str) -> List[str]:
