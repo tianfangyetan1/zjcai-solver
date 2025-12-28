@@ -1,4 +1,4 @@
-# Zjcai Solvers
+# Zjcai Solver
 
 [![GitHub Release](https://img.shields.io/github/v/release/tianfangyetan1/zjcai-solver)](https://github.com/tianfangyetan1/zjcai-solver/releases/latest)
 [![GitHub Release Date](https://img.shields.io/github/release-date/tianfangyetan1/zjcai-solver?display_date=published_at)](https://github.com/tianfangyetan1/zjcai-solver/releases/latest)
