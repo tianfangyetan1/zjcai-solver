@@ -3,12 +3,20 @@
 [![GitHub Release](https://img.shields.io/github/v/release/tianfangyetan1/zjcai-solver)](https://github.com/tianfangyetan1/zjcai-solver/releases/latest)
 [![GitHub Release Date](https://img.shields.io/github/release-date/tianfangyetan1/zjcai-solver?display_date=published_at)](https://github.com/tianfangyetan1/zjcai-solver/releases/latest)
 
-此脚本用于自动完成 [zjcai.com](https://zjcai.com) 的在线题目。通过 Selenium 操作浏览器，然后调用 DeepSeek API 获取答案。
+此脚本用于自动完成 [zjcai.com](https://zjcai.com) 的在线题目。通过 Python Selenium 操作浏览器，然后调用 DeepSeek API 获取答案。
 
 ## TODO
 
 - [x] 增加题目图片识别
 - [x] 可以对每种题型单独设置是否开启深度思考
+
+### 题型适配情况
+
+- [x] 单选题/判断题
+- [x] 填空题
+  - [x] 多个填空的情况
+- [x] 程序设计题
+  - [x] 获取题目中给出的代码片段
 
 ## 使用方法
 
