@@ -1,7 +1,7 @@
 # Zjcai Solver
 
 [![GitHub Release](https://img.shields.io/github/v/release/tianfangyetan1/zjcai-solver)](https://github.com/tianfangyetan1/zjcai-solver/releases/latest)
-[![GitHub Release Date](https://img.shields.io/github/release-date/tianfangyetan1/zjcai-solver?display_date=published_at)](https://github.com/tianfangyetan1/zjcai-solver/releases/latest)
+[![GitHub Release Date](https://img.shields.io/github/release-date/tianfangyetan1/zjcai-solver)](https://github.com/tianfangyetan1/zjcai-solver/releases/latest)
 
 此脚本用于自动完成 [zjcai.com](https://zjcai.com) 的在线题目。通过 Python Selenium 操作浏览器，然后调用 DeepSeek API 获取答案。
 
