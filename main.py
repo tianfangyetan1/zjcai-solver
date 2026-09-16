@@ -99,6 +99,11 @@ SELECTORS = {
     "save_button_id": "cmd_saveQuestion",
     "next_button_id": "cmd_next",
 
+    # 代码题保存后的阅卷/测试用例弹窗（fancybox）
+    "judge_popup_overlay": ".fancybox-overlay",
+    "judge_popup_iframe": "iframe.fancybox-iframe",
+    "judge_popup_close": ".fancybox-close",
+
     # 登录
     "login_username_id": "UserName",
     "login_password_id": "Password",
@@ -135,6 +140,14 @@ def clean_whitespace(s: str) -> str:
     s = html.unescape(s or "")
     s = s.replace("\xa0", " ")
     return re.sub(r"\s+", " ", s).strip()
+
+
+def compress_whitespace_keep_lines(s: str) -> str:
+    """按行压缩空白：行内连续空白压缩为单空格，去除空行，保留换行结构。"""
+    s = html.unescape(s or "")
+    s = s.replace("\xa0", " ")
+    lines = [re.sub(r"[ \t]+", " ", line).strip() for line in s.splitlines()]
+    return "\n".join(line for line in lines if line)
 
 
 def split_fill_answer(raw: str) -> List[str]:
@@ -335,7 +348,7 @@ class QuizSolver:
         html = element.get_attribute("innerHTML") or ""
         if not html:
             # 没有 HTML 时退化为纯文本
-            return clean_whitespace(element.text)
+            return compress_whitespace_keep_lines(element.text)
 
         # 收集当前元素下所有图片（按 DOM 顺序）
         imgs = element.find_elements(By.CSS_SELECTOR, "img")
@@ -380,14 +393,32 @@ class QuizSolver:
                 return f" [公式: {latex}] "
             return " [图片] "
 
+        # 先把 <pre> 块用占位符保护起来：其内部原样保留（空行/缩进可能是题目内容），
+        # 仅去掉 <pre> 标签首尾紧贴的排版换行
+        pre_blocks: List[str] = []
+
+        def _pre_protect(m: re.Match) -> str:
+            pre_blocks.append(m.group(1).strip("\n"))
+            return f"\x00PRE{len(pre_blocks) - 1}\x00"
+
+        html = re.sub(r"(?is)<pre\b[^>]*>(.*?)</pre>", _pre_protect, html)
+
         # 先把 <br> 转成换行，增强可读性
         html = re.sub(r"(?i)<br\s*/?>", "\n", html)
         # 再替换掉所有 <img ...>
         html = re.sub(r"(?i)<img\b[^>]*>", _img_replacer, html)
         # 去掉剩余 HTML 标签
         html = re.sub(r"<[^>]+>", "", html)
-        # 压缩空白
-        return clean_whitespace(html)
+        # 按行压缩空白，保留换行结构（如 <pre> 中的多行输出样例）
+        text = compress_whitespace_keep_lines(html)
+
+        # 还原 <pre> 块内容（此时尚未做 HTML 实体反转义，在这里补上）
+        from html import unescape
+
+        def _pre_restore(m: re.Match) -> str:
+            return unescape(pre_blocks[int(m.group(1))])
+
+        return re.sub(r"\x00PRE(\d+)\x00", _pre_restore, text)
 
     def get_question_text_for_code(self) -> str:
         """
@@ -666,6 +697,69 @@ class QuizSolver:
         except Exception:
             pass
 
+    def dismiss_judge_popup(self, timeout: int = SHORT_WAIT_SECONDS) -> None:
+        """部分代码题（data-type-judgeonsave=1）保存后会弹出阅卷/测试用例弹窗（fancybox），
+        检测并关闭，避免遮挡后续的翻题操作。"""
+        try:
+            WebDriverWait(self.driver, timeout).until(
+                EC.visibility_of_element_located(
+                    (By.CSS_SELECTOR, SELECTORS["judge_popup_overlay"])
+                )
+            )
+        except TimeoutException:
+            return  # 没有弹窗，直接返回
+
+        # 尝试读取 iframe 内的阅卷结果，便于日志核对
+        try:
+            iframe = WebDriverWait(self.driver, timeout).until(
+                EC.presence_of_element_located(
+                    (By.CSS_SELECTOR, SELECTORS["judge_popup_iframe"])
+                )
+            )
+            self.driver.switch_to.frame(iframe)
+            try:
+                body = WebDriverWait(self.driver, DEFAULT_WAIT_SECONDS).until(
+                    EC.presence_of_element_located((By.TAG_NAME, "body"))
+                )
+                result_text = clean_whitespace(body.text)
+                if result_text:
+                    logging.info("阅卷弹窗内容：%s", result_text)
+            finally:
+                self.driver.switch_to.default_content()
+        except Exception:
+            try:
+                self.driver.switch_to.default_content()
+            except Exception:
+                pass
+
+        # 关闭弹窗：优先点击关闭按钮，兜底调用 $.fancybox.close()
+        closed = False
+        try:
+            close_btn = self.driver.find_element(
+                By.CSS_SELECTOR, SELECTORS["judge_popup_close"]
+            )
+            close_btn.click()
+            closed = True
+        except Exception:
+            pass
+        if not closed:
+            try:
+                self.driver.execute_script(
+                    "try { $.fancybox.close(); } catch(e) {}"
+                )
+            except Exception:
+                pass
+
+        # 等待遮罩消失，避免遮挡后续操作
+        try:
+            WebDriverWait(self.driver, timeout).until(
+                EC.invisibility_of_element_located(
+                    (By.CSS_SELECTOR, SELECTORS["judge_popup_overlay"])
+                )
+            )
+        except TimeoutException:
+            logging.warning("测试用例弹窗未能关闭，可能影响后续操作。")
+
     # ---------- 翻题 ----------
     def go_next_question(self, old_q_el) -> bool:
         """点击“下一题”，等待旧题元素失效；若弹出“最后一题”提示则返回 True 表示结束。"""
@@ -814,6 +908,7 @@ class QuizSolver:
                         logging.warning("未能写入富文本/代码编辑器，或未找到可写节点。")
 
                     self.try_click_save()
+                    self.dismiss_judge_popup()
                 else:
                     logging.warning("未知题型 %s，跳过。", q.qtype)
 
