@@ -25,54 +25,29 @@
       "description": "Deepseek 的 API-Key，是调用 API 的凭证\n切记不要泄露给他人！",
       "pattern": "^sk-.+"
     },
-    "llm-models": {
-      "type": "object",
-      "description": "答题时调用的模型名称",
-      "properties": {
-        "normal": {
-          "type": "string",
-          "description": "未开启深度思考时调用的模型"
-        },
-        "reasoner": {
-          "type": "string",
-          "description": "开启深度思考时调用的模型"
-        }
-      },
-      "required": [
-        "normal"
-      ]
+    "llm-model": {
+      "type": "string",
+      "description": "模型名称\n题目中的图片需要依赖图像理解能力，请选择支持图片理解的模型，例如 deepseek-flash",
+      "default": "deepseek-flash"
     },
-    "enable-reasoning": {
-      "type": "object",
-      "description": "根据题型判断是否启用深度思考",
-      "properties": {
-        "single-or-judge": {
-          "type": "boolean",
-          "description": "单选题和判断题"
-        },
-        "fill-blank": {
-          "type": "boolean",
-          "description": "填空题\n推荐开启，可以降低模型抽风的概率"
-        },
-        "programming": {
-          "type": "boolean",
-          "description": "程序设计题"
-        }
-      }
+    "reasoning-effort": {
+      "type": "string",
+      "description": "思考强度\n越高回答质量越好，但速度更慢，消耗的 token 更多",
+      "enum": [
+        "low",
+        "high",
+        "max"
+      ],
+      "default": "high"
     },
     "chromedriver-path": {
       "type": "string",
       "description": "Chrome Driver 的路径",
       "format": "uri"
-    },
-    "enable-latex-ocr": {
-      "type": "boolean",
-      "description": "是否启用 Latex 图像识别公式\n如果题目中包含图片，请开启此选项，需要安装相应依赖"
     }
   },
   "required": [
     "account",
-    "deepseek-api-key",
-    "llm-models"
+    "deepseek-api-key"
   ]
 }
