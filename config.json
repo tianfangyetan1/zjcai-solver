@@ -4,15 +4,7 @@
         "password": ""
     },
     "deepseek-api-key": "",
-    "llm-models": {
-        "normal": "deepseek-chat",
-        "reasoner": "deepseek-reasoner"
-    },
-    "enable-reasoning": {
-        "single-or-judge": false,
-        "fill-blank": false,
-        "programming": false
-    },
-    "chromedriver-path": "",
-    "enable-latex-ocr": false
+    "llm-model": "deepseek-flash",
+    "reasoning-effort": "high",
+    "chromedriver-path": ""
 }
