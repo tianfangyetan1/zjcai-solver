@@ -71,12 +71,6 @@ pip install -r requirements.txt
 
 默认情况下，Selenium 会在运行时自动下载合适的 Chrome Driver 版本。如果下载速度很慢，可以[手动下载并配置路径](https://github.com/tianfangyetan1/zjcai-solver?tab=readme-ov-file#4-%E9%85%8D%E7%BD%AE-chrome-driver%E5%8F%AF%E9%80%89)。
 
-### 2. LLM 生成的回答质量较差怎么办？
-
-调高 `config.json` 中的 `reasoning-effort`，模型会思考得更久，回答质量更好，但速度会变慢、消耗的 token 更多。
-
-可选值为 `minimal` / `low` / `medium` / `high` / `xhigh` / `max` / `ultra`，默认 `high`。实际映射关系：`minimal`、`low` → 低强度，`medium`、`high`、`xhigh` → 高强度，`max`、`ultra` → 最高强度。
-
-### 3. 题目中的图片是怎么处理的？
+### 2. 题目中的图片是怎么处理的？
 
 图片会随题目一起上传给模型，题面文本中以 `[图片1]`、`[图片2]` 的形式标注其原本所在位置。无需安装任何本地识别模块。
